@@ -1,0 +1,46 @@
+{
+  "displayName": "Homebridge-SmartThings-niconyan",
+  "name": "homebridge-smartthings-niconyan",
+  "version": "0.0.1-beta.0",
+  "description": "SmartThings plugin for Homebridge",
+  "main": "dist/index.js",
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "smartthings"
+  ],
+  "author": "niconyan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/niconyanGH/Homebridge-SmartThings-niconyan.git"
+  },
+  "scripts": {
+    "lint": "eslint src/**.ts --max-warnings=0 --fix",
+    "watch": "npm run build && npm link && nodemon",
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run lint && npm run build"
+  },
+  "bugs": {
+    "url": "https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/issues"
+  },
+  "engines": {
+    "node": ">=14.18.1",
+    "homebridge": ">=1.3.5"
+  },
+  "dependencies": {
+    "@smartthings/core-sdk": "^3.4.0",
+    "homebridge-config-ui-x": "^4.42.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.23",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "eslint": "^8.12.0",
+    "homebridge": "^1.3.9",
+    "nodemon": "^2.0.15",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
+  }
+}
