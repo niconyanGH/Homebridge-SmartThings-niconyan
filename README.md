@@ -32,4 +32,4 @@ The stable version is uploaded to the main branch.
     + sleep: 0~15 %
     + wind-free: 16~50 %
     + smart: 51~85 %
-    + max: 86~100 %
+    + max: 86~100 %``

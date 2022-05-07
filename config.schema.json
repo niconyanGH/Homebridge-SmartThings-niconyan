@@ -1,5 +1,5 @@
 {
-    "pluginAlias": "HomebridgeSmartThingsTest",
+    "pluginAlias": "HomebridgeSmartThingsNiconyan",
     "pluginType": "platform",
     "singular": true,
     "headerDisplay": "도움이 필요하다면 [깃허브페이지](https://github.com/niconyanGH/homebridge-smartthings)를 방문해주세요",
