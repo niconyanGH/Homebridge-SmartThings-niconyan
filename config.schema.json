@@ -1,0 +1,29 @@
+{
+    "pluginAlias": "HomebridgeSmartThingsTest",
+    "pluginType": "platform",
+    "singular": true,
+    "headerDisplay": "도움이 필요하다면 [깃허브페이지](https://github.com/niconyanGH/homebridge-smartthings)를 방문해주세요",
+    "footerDisplay": "If you need help, please visit [github](https://github.com/niconyanGH/homebridge-smartthings)",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "private_token": {
+                "title": "SmartThings Token",
+                "description": "새 토큰을 발급 받는 방법은 https://github.com/niconyanGH/homebridge-smartthings을 방문해주세요.",
+                "type": "string",
+                "pattern": "^([a-z0-9]{8}-)([a-z0-9]{4}-){3}[a-z0-9]{12}$",
+                "required": true
+            },
+            "language": {
+                "title": "로그 언어(Log Language)",
+                "default": "kr",
+                "oneOf": [
+                    {"title": "한국어", "enum": ["kr"]},
+                    {"title": "English","enum": ["en"]}
+                ],
+                "type": "string",
+                "required": true
+            }
+        }
+    }
+}

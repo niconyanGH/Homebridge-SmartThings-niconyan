@@ -1,0 +1,131 @@
+{
+    "kr": {
+        "isCheck": {
+            "0": "에러",
+            "1": "확인"
+        },
+        "isOnOff": {
+            "0": "꺼짐",
+            "1": "켜짐"
+        },
+        "platform": {
+            "0": "플랫폼 초기화 완료.",
+            "1": "캐시된 액세서리 복원 완료",
+            "2": "디바이스 검색 및 등록 개시",
+            "3": "캐시의 SmartThings 액세서리를 불러왔습니다.",
+            "4": "SmartThings 기기를 찾았습니다.",
+            "5": "SmartThings 기기를 찾지 못했습니다.",
+            "6": "캐시에서 기존 액세서리 복원:",
+            "7": "캐시에서 기존 액세서리 삭제:",
+            "8": "새 액세서리 추가:"
+        },
+        "error": {
+            "0": "메세지 오류 발생",
+            "1": "config에 토큰값을 넣어주세요.",
+            "2": "이 플러그인이 지원하는 SmartThings 기기를 찾지 못했습니다.",
+            "3": "API작동중 에러 발생: ",
+            "4": "플러그인 업데이트 중 에러 발생: "
+        },
+        "accessory": {
+            "0": "액세서리 초기화: "
+        },
+        "airpurifier": {
+            "0": "공기청정기 초기화",
+            "1": "작동여부:",
+            "2": "작동제어:",
+            "3": "현재 공기청정기 상태:",
+            "4": "작동모드:",
+            "5": "작동모드제어:",
+            "6": "자동모드:",
+            "7": "자동모드제어:"
+        },
+        "airpurifier-mode": {
+            "0": "수면모드",
+            "1": "무풍모드",
+            "2": "스마트모드또는강풍모드"
+        },
+        "airSensor": {
+            "0": "공기질:",
+            "1": "PM10:",
+            "2": "PM2.5:"
+        },
+        "airSensor-mode": {
+            "0": "알 수 없음",
+            "1": "아주 좋음",
+            "2": "좋음",
+            "3": "보통",
+            "4": "좋지 않음",
+            "5": "최악"
+        },
+        "filterMaintenance": {
+            "0": "필터교체 필요여부",
+            "1": "필터수명",
+            "2": "필터수명초기화"
+        }
+    },
+    "en": {
+        "isCheck": {
+            "0": "error",
+            "1": "check"
+        },
+        "isOnOff": {
+            "0": "off",
+            "1": "on"
+        },
+        "platform": {
+            "0": "Finished initializing platform.",
+            "1": "Homebridge has restored all cached accessories from disk",
+            "2": "Discover / register your devices as accessories.",
+            "3": "Loading SmartThings accessory from cache: ",
+            "4": "Discovered SmartThings:",
+            "5": "Not discovered SmartThings",
+            "6": "Restoring existing accessory from cache:",
+            "7": "Removing existing accessory from cache:",
+            "8": "Adding new accessory:"
+        },
+        "error": {
+            "0": "Error: message",
+            "1": "Please input token to config.",
+            "2": "SmartThings devies weren’t found supported by this plugin.",
+            "3": "API Error: ",
+            "4": "Error updating plug-in: "
+
+        },
+        "accessory": {
+            "0": "Initializing accessory: "
+        },
+        "airpurifier": {
+            "0": "Initializing air purifier",
+            "1": "Operational status:",
+            "2": "Operation control:",
+            "3": "Current Air Purifier State:",
+            "4": "Operating mode:",
+            "5": "Operating mode control:",
+            "6": "Auto mode:",
+            "7": "Auto mode control:"
+        },
+        "airpurifier-mode": {
+            "0": "Sleep",
+            "1": "Wind-free",
+            "2": "Smart or Max"
+        },
+        "airSensor": {
+            "0": "Air quality:",
+            "1": "PM10:",
+            "2": "PM2.5:"
+        },
+        "airSensor-mode": {
+            "0": "unknown",
+            "1": "excellent",
+            "2": "good",
+            "3": "fair",
+            "4": "inferior",
+            "5": "poor"
+        },
+        "filterMaintenance": {
+            "0": "Filter Change Indication",
+            "1": "Filter Life Level",
+            "2": "Reset Filter Indication"
+        }
+    }
+}
