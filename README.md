@@ -1,7 +1,7 @@
-<center>
+<span align="center">
 
 # Homebridge-SmartThings-niconyan
-</center>
+</span>
 
 한국어공지는 src-kr 폴더를 클릭해 확인할 수 있습니다.
 
@@ -59,10 +59,10 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
 ![Alt text](guide/4.png?raw=true)
 
 ## Release note
-<center>
+<span align="center">
 
 ### ver0.0.1
-</center>
+</span>
 
 ![Alt text](ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(en).png?raw=true)
 

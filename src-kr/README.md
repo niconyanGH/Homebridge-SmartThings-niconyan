@@ -1,7 +1,7 @@
-<center>
+<span align="center">
 
 # Homebridge-SmartThings-niconyan
-</center>
+</span>
 
 [Homebridge](https://github.com/homebridge/homebridge)용 SmartThings 플러그인입니다. 
 
@@ -59,10 +59,10 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 ![Alt text](../guide/4.png?raw=true)
 
 ## 릴리스 노트
-<center>
+<span align="center">
 
 ### ver0.0.1
-</center>
+</span>
 
 ![Alt text](./../ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(kr).png?raw=true)
 
