@@ -31,7 +31,7 @@ export class SmartThingsAccessory {
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, this.manufacturer)
       .setCharacteristic(this.platform.Characteristic.Model, this.model)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.uuid)
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.uuid);
 
     // Check the accessory type and set the service to be provided.
     new SmartThingsServiceSelector(this.platform, this.accessory);
