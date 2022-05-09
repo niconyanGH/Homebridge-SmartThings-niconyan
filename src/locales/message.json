@@ -8,6 +8,11 @@
             "0": "꺼짐",
             "1": "켜짐"
         },
+        "isNetwork": {
+            "0": "오프라인",
+            "1": "온라인",
+            "2": "알 수 없음"
+        },
         "platform": {
             "0": "플랫폼 초기화 완료.",
             "1": "캐시된 액세서리 복원 완료",
@@ -29,6 +34,13 @@
         "accessory": {
             "0": "액세서리 초기화: "
         },
+        "network": {
+            "0": "네트워크 연결상태: ",
+            "1": "이 기기는 현재 네트워크에 연결되어 있지 않습니다. 확인하시고 다시 시도해주시기 바랍니다.",
+            "2": "이 기기는 방금 네트워크에 연결됐습니다.",
+            "3": "이 기기는 방금 네트워크에서 해제됐습니다.",
+            "4": "기기의 네트워크 상태를 알 수 없습니다."
+        },
         "airpurifier": {
             "0": "공기청정기 초기화",
             "1": "작동여부:",
@@ -42,7 +54,7 @@
         "airpurifier-mode": {
             "0": "수면모드",
             "1": "무풍모드",
-            "2": "스마트모드또는강풍모드"
+            "2": "공기청정모드"
         },
         "airSensor": {
             "0": "공기질:",
@@ -72,6 +84,11 @@
             "0": "off",
             "1": "on"
         },
+        "isNetwork": {
+            "0": "OFFLINE",
+            "1": "ONLINE",
+            "2": "UNKNWON"
+        },
         "platform": {
             "0": "Finished initializing platform.",
             "1": "Homebridge has restored all cached accessories from disk",
@@ -94,6 +111,13 @@
         "accessory": {
             "0": "Initializing accessory: "
         },
+        "network": {
+            "0": "Network status: ",
+            "1": "This device is not currently connected to the network. Please check and try again.",
+            "2": "This device has just been connected to the network.",
+            "3": "This device has just been disconnected from the network.",
+            "4": "The device's network status is unknown."
+        },
         "airpurifier": {
             "0": "Initializing air purifier",
             "1": "Operational status:",
@@ -105,9 +129,9 @@
             "7": "Auto mode control:"
         },
         "airpurifier-mode": {
-            "0": "Sleep",
-            "1": "Wind-free",
-            "2": "Smart or Max"
+            "0": "Sleep mode",
+            "1": "Wind-free mode",
+            "2": "Air cleaning mode"
         },
         "airSensor": {
             "0": "Air quality:",

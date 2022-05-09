@@ -13,10 +13,7 @@ export class SmartThingsAccessory {
   public manufacturer: string;
   public model: string;
   public serialNumber: string;
-  public firmwareVersion: string;
 
-  private isPolling = false;
-  private isUpdateValue = false;
   constructor(
     private readonly platform: HomebridgeSmartThings,
     private readonly accessory: PlatformAccessory,
@@ -29,14 +26,12 @@ export class SmartThingsAccessory {
     this.manufacturer = accessory.context.device.manufacturer;
     this.model = accessory.context.device.model;
     this.serialNumber = accessory.context.device.serialNumber;
-    this.firmwareVersion = accessory.context.device.firmwareVersion;
 
     this.platform.log.info(this.platform.locale.getMsg('accessory', 0), this.name);
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, this.manufacturer)
       .setCharacteristic(this.platform.Characteristic.Model, this.model)
       .setCharacteristic(this.platform.Characteristic.SerialNumber, this.uuid)
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.firmwareVersion);
 
     // Check the accessory type and set the service to be provided.
     new SmartThingsServiceSelector(this.platform, this.accessory);

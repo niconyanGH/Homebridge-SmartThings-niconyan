@@ -1,8 +1,7 @@
-<span align=“center”>
+<center>
 
 # Homebridge-SmartThings-niconyan
-
-</span>
+</center>
 
 한국어공지는 src-kr 폴더를 클릭해 확인할 수 있습니다.
 
@@ -11,7 +10,7 @@ This is SmartThings plug-in for [Homebridge](https://github.com/homebridge/homeb
 When you use SmartThings devices on iPhone, It will be useful.
 You can set up automation by linking HomeKit devices and SmartThings devices, or control SmartThings devices as Siri, or add SmartThings icon on iPhone Control Center.
 
-Experimental functionality is being developed in beta branch.
+Experimental functionality is being developed in [beta branch](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/tree/beta).
 
 If you have a trouble, please report it to the [issues](https://github.com/niconyanGH/homebridge-smartthings/issues).
 
@@ -19,19 +18,20 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
 
 ## Support range
 ### Support log language
-Korean
-English
+* Korean
+* English
 
 ### Support SmartThings devices
 * Air purifier
   - support model
     + AX47T9360WSD
+    + AX60R5080WD
   - support capability
     + power On/Off
     + operation mode control: sleep/windfree/smart/max (beta)
     + auto mode contorl: auto/manual
     + verify air quality: 1 ~ 4 (CAQI)
-    + verify finedust PM10, PM2.5
+    + verify finedust PM10, PM2.5 (unit is wrong. mg/m³ is not, µg/m³ is right.)
     + verify indicator for hepa-filter (scheduled to support)
     + verify life to hepa-filter (scheduled to support)
     + reset life tor hepa-filter (scheduled to support)
@@ -46,7 +46,7 @@ English
 
 ## How to get a SmartThingsAPI token
 
-Access the [SmartThings token page](https://account.smartthings.com/tokens) and sign in to your Samsung account.
+1. Access the [SmartThings token page](https://account.smartthings.com/tokens) and sign in to your Samsung account.
 ![Alt text](guide/1.png?raw=true)
 
 2. Click the GENERATE NEW TOKEN.
@@ -59,10 +59,10 @@ Access the [SmartThings token page](https://account.smartthings.com/tokens) and 
 ![Alt text](guide/4.png?raw=true)
 
 ## Release note
-<span align=“center”>
+<center>
 
-### ver.0.0.1
-</span>
+### ver0.0.1
+</center>
 
 ![Alt text](ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(en).png?raw=true)
 
@@ -71,3 +71,8 @@ new accessory: air purifier
 * switch automode
 * verify air quality
 * verify finedust pm10, pm2.5
+
+## Thanks to
+* [Normal People](https://www.youtube.com/c/%EB%85%B8%EB%A9%80%ED%94%BC%ED%94%8C): provide translation inspection
+* imeSven: bug report, provide 'AX60R5080WD' token
+* [SmartThings community](https://community.smartthings.com/): provide development tip.

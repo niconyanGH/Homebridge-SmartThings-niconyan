@@ -5,7 +5,6 @@ export interface STDevice {
     manufacturer: string;
     model: string;
     serialNumber: string;
-    firmwareVersion: string;
 }
 
 export interface AirPurifier {

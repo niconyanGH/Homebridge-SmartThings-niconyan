@@ -33,18 +33,15 @@ export class SmartThingsAPI {
                     manufacturer: '',
                     model: '',
                     serialNumber: '',
-                    firmwareVersion: '',
                   };
                   const ocf = Device['ocf'] ? Device['ocf'] : 'not ocf';
                   const modelNumber = ocf ? ocf['modelNumber'] : 'not ocf';
-                  const firmwareVersion = ocf ? ocf['specVersion'] : 'not ocf';
                   device.uuid = Device['deviceId'];
                   device.name = Device['label'];
                   device.type = ocfType;
                   device.manufacturer = Device['manufacturerName'];
                   device.model = modelNumber;
-                  device.firmwareVersion = firmwareVersion;
-                  this.platform.log.info('name: '+device.name+' | uuid: '+device.uuid);
+                  this.platform.log.info('name: ' + device.name + ' | uuid: ' + device.uuid);
                   this.devices.push(device);
                 }
               })
@@ -59,6 +56,16 @@ export class SmartThingsAPI {
     return this.devices;
   }
 
+  // ONLINE, OFFLINE, UNKNOWN
+  async getHealth(device_UUID: string): Promise<string> {
+    let health = '';
+    await this.client.devices.getHealth(device_UUID)
+      .then(res => {
+        health = res.state;
+      })
+    return health;
+  }
+
   // Capabilities list: {id: capability_name, version: number}
   async getCapabilitiesList(device_UUID: string): Promise<Array<CapabilityReference>> {
     let capabilitiesList = new Array<CapabilityReference>();
@@ -68,6 +75,22 @@ export class SmartThingsAPI {
         capabilitiesList = component[0]['capabilities'] as Array<CapabilityReference>;
       });
     return capabilitiesList;
+  }
+
+  // Cube FanMode: sleep, windfree, smart, max
+  // Smart FanMode: sleep, low, medium, high, auto
+  async getFanModeList(device_UUID: string): Promise<Array<string>> {
+    let fanModeList = new Array<string>();
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airConditionerFanMode')
+      .then(res => {
+        const supportFanModeList = res.supportedAcFanModes.value as Array<string>;
+        if(supportFanModeList != undefined){
+          supportFanModeList.forEach(supprotFanMode => {
+            fanModeList.push(supprotFanMode);
+          })
+        }
+      });
+    return fanModeList;
   }
 
   // SwitchState: On/Off
@@ -88,7 +111,6 @@ export class SmartThingsAPI {
     this.client.devices.executeCommand(device_UUID, command);
   }
 
-  // FanMode: sleep, windfree, smart, max
   async getFanMode(device_UUID: string): Promise<string> {
     let fanMode = '';
     await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airConditionerFanMode')

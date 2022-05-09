@@ -1,8 +1,7 @@
-<span align="center">
+<center>
 
 # Homebridge-SmartThings-niconyan
-
-</span>
+</center>
 
 [Homebridge](https://github.com/homebridge/homebridge)용 SmartThings 플러그인입니다. 
 
@@ -11,7 +10,7 @@
 SmartThings기기를 아이폰에서 사용할 때 유용합니다.
 SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri로 제어할 때, Control Center에 아이콘을 추가해놓고 쓸 수 있습니다.
 
-실험적인 기능을 베타 브런치에서 개발중입니다.
+실험적인 기능을 [베타 브런치](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/tree/beta)에서 개발중입니다.
 
 이 플러그인을 사용하며 문제를 겪는다면 [이슈탭](https://github.com/niconyanGH/homebridge-smartthings/issues)에 제보해주세요.
 
@@ -26,12 +25,13 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 * 공기청정기
   - 지원 모델
     + AX47T9360WSD
+    + AX60R5080WD
   - 지원 기능
     + 전원 On/Off
     + 작동 운전모드 제어: 수면/무풍/스마트/강풍 (베타 테스트중)
     + 자동 운전모드 제어: 자동/수동
     + 공기질 확인: 1 ~ 4 (CAQI)
-    + 미세먼지 PM10, PM2.5 수치 확인
+    + 미세먼지 PM10, PM2.5 수치 확인 (단위가 잘못 됨. mg/m³가 아닌 µg/m³가 옳음.)
     + 헤파 필터 교체지시등 확인 (지원예정)
     + 헤파 필터 남은 수명 확인 (지원예정)
     + 헤파 필터 남은 수명 초기화 (지원예정)
@@ -59,10 +59,10 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 ![Alt text](../guide/4.png?raw=true)
 
 ## 릴리스 노트
-<span align="center">
+<center>
 
 ### ver0.0.1
-</span>
+</center>
 
 ![Alt text](./../ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(kr).png?raw=true)
 
@@ -71,3 +71,8 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 * 공기청정기의 자동모드를 수동과 자동중에 선택할 수 있습니다.
 * 공기질을 확인할 수 있습니다.
 * 미세먼지 PM10과 PM2.5의 수치를 확인할 수 있습니다.
+
+## Thanks to
+* [노멀피플](https://www.youtube.com/c/%EB%85%B8%EB%A9%80%ED%94%BC%ED%94%8C): 번역검수 제공
+* imeSven: 버그제보, 'AX60R5080WD' 토큰 제공
+* [SmartThings community](https://community.smartthings.com/): 개발 팁 제공.
