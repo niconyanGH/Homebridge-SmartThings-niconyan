@@ -13,10 +13,7 @@ export class SmartThingsAccessory {
   public manufacturer: string;
   public model: string;
   public serialNumber: string;
-  public firmwareVersion: string;
 
-  private isPolling = false;
-  private isUpdateValue = false;
   constructor(
     private readonly platform: HomebridgeSmartThings,
     private readonly accessory: PlatformAccessory,
@@ -29,15 +26,13 @@ export class SmartThingsAccessory {
     this.manufacturer = accessory.context.device.manufacturer;
     this.model = accessory.context.device.model;
     this.serialNumber = accessory.context.device.serialNumber;
-    this.firmwareVersion = accessory.context.device.firmwareVersion;
 
     // 액세서리 정보를 초기화합니다.
     this.platform.log.info(this.platform.locale.getMsg('accessory', 0), this.name);
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(this.platform.Characteristic.Manufacturer, this.manufacturer)
       .setCharacteristic(this.platform.Characteristic.Model, this.model)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.uuid)
-      .setCharacteristic(this.platform.Characteristic.FirmwareRevision, this.firmwareVersion);
+      .setCharacteristic(this.platform.Characteristic.SerialNumber, this.uuid);
 
     // 액세서리 타입을 체크해 제공할 서비스를 설정합니다.
     new SmartThingsServiceSelector(this.platform, this.accessory);

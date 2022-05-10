@@ -3,10 +3,11 @@ import { CapabilityReference } from '@smartthings/core-sdk';
 import { HomebridgeSmartThings } from './HomebridgeSmartThings';
 import * as STDevice from './libs/SmartThingsInterface';
 
-// SmartThings 공기청정기 서비스 클래스입니다.
+// SmartThings air purifier service class.
 export class SmartThingsAirPurifierService {
   private name: string;
   private uuid: string;
+  private health: string;
 
   private airPurifierType: number;
   public airPurifierState: STDevice.AirPurifier;
@@ -14,22 +15,28 @@ export class SmartThingsAirPurifierService {
   public filterMaintenaceState: STDevice.FilterMaintenance;
 
   private isPolling = false;
-  private isUpdateValue = false;
+  private isUpdateValue = true;
 
   constructor(
-        private readonly platform: HomebridgeSmartThings,
-        private readonly accessory: PlatformAccessory,
+    private readonly platform: HomebridgeSmartThings,
+    private readonly accessory: PlatformAccessory,
   ) {
     this.name = accessory.context.device.name;
     this.uuid = accessory.context.device.uuid;
+    this.health = 'OFFLINE';
 
+    /* airPurifierType
+      * 1: Cube(AX47T9360WSD)
+      * 2: Smart(AX60R5080WD)
+    */
     this.airPurifierType = 0;
+
     this.airPurifierState = {
       Switch: 0,
       AirPurifierState: 0,
       FanMode: 0,
       AutoMode: 0,
-      AirQuality: 1,
+      AirQuality: 0,
       PM10: 0,
       PM2_5: 0,
     };
@@ -49,32 +56,39 @@ export class SmartThingsAirPurifierService {
   }
 
   async airPurifierService() {
+    // 네트워크에 디바이스가 연결됐는지 확인
+    this.health = await this.getHealth();
+    if (this.health === 'ONLINE') {
+      this.platform.log.info(this.name + ':',
+        [this.platform.locale.getMsg('network', 0),
+        this.platform.locale.getMsg('isNetwork', 1)]);
+    }
+
     // 커스텀 기능(custom capability) 체크 & 공기청정기 서비스 지원 구분
     let capabilitiesList = new Array<CapabilityReference>();
     capabilitiesList = await this.getCapabilitiesList();
-    this.platform.log.info(this.name + ': ', capabilitiesList);
     const isCustomPeriodicSensing = capabilitiesList.find(capability => capability.id === 'custom.periodicSensing');
     const isCustomHepaFilter = capabilitiesList.find(capability => capability.id === 'custom.hepaFilter');
+    const isFanModeSmart = await this.getFanModeList();
+    this.platform.log.info(isFanModeSmart as unknown as string);
     if (isCustomPeriodicSensing && isCustomHepaFilter) {
       this.airPurifierType = 1;
-    } else if (isCustomPeriodicSensing) {
+    } else if (isFanModeSmart.length === 0 || isFanModeSmart.length === 5) {
       this.airPurifierType = 2;
-    } else if (isCustomHepaFilter) {
-      this.airPurifierType = 3;
     } else {
-      this.airPurifierType = 4;
+      this.airPurifierType = 3;
     }
     this.platform.log.info(this.name + ':',
       [this.platform.locale.getMsg('airpurifier', 0),
-        'Type: ' + this.airPurifierType]);
+      'Type: ' + this.airPurifierType]);
 
     // 공기청정기 제어 서비스
     const service = this.accessory.getService(this.platform.Service.AirPurifier) ||
-            this.accessory.addService(this.platform.Service.AirPurifier);
+      this.accessory.addService(this.platform.Service.AirPurifier);
     const service2 = this.accessory.getService(this.platform.Service.AirQualitySensor) ||
-            this.accessory.addService(this.platform.Service.AirQualitySensor);
+      this.accessory.addService(this.platform.Service.AirQualitySensor);
     const service3 = this.accessory.getService(this.platform.Service.FilterMaintenance) ||
-            this.accessory.addService(this.platform.Service.FilterMaintenance);
+      this.accessory.addService(this.platform.Service.FilterMaintenance);
 
     service.getCharacteristic(this.platform.Characteristic.Active)
       .on('get', this.handleActiveGet.bind(this))
@@ -85,10 +99,14 @@ export class SmartThingsAirPurifierService {
       .on('get', this.handleRotationSpeedGet.bind(this))
       .on('set', this.handleRotationSpeedSet.bind(this));
 
-    if (this.airPurifierType === 1 || this.airPurifierType === 2) {
+    if (this.airPurifierType === 1) {
       service.getCharacteristic(this.platform.Characteristic.TargetAirPurifierState)
-        .on('get', this.handleTargetAirPurifierStateGet.bind(this))
-        .on('set', this.handleTargetAirPurifierStateSet.bind(this));
+        .on('get', this.handleType1TargetAirPurifierStateGet.bind(this))
+        .on('set', this.handleType1TargetAirPurifierStateSet.bind(this));
+    } else if (this.airPurifierType === 2) {
+      service.getCharacteristic(this.platform.Characteristic.TargetAirPurifierState)
+        .on('get', this.handleType2TargetAirPurifierStateGet.bind(this))
+        .on('set', this.handleType2TargetAirPurifierStateSet.bind(this));
     }
 
     // 공기질 센서 서비스
@@ -100,8 +118,8 @@ export class SmartThingsAirPurifierService {
       .on('get', this.handlePM2_5DensityGet.bind(this));
 
 
-    // 공기청정기 헤파 필터 교체지시등, 수명, 리셋 서비스
-    if (this.airPurifierType === 1 || this.airPurifierType === 3) {
+    // 공기청정기 헤파 필터 서비스
+    if (this.airPurifierType === 1) {
       service3.getCharacteristic(this.platform.Characteristic.FilterChangeIndication)
         .on('get', this.handleFilterChangeIndicationGet.bind(this));
       service3.getCharacteristic(this.platform.Characteristic.FilterLifeLevel)
@@ -115,28 +133,34 @@ export class SmartThingsAirPurifierService {
       try {
         if (this.isUpdateValue) {
           this.isPolling = true;
-          if (this.airPurifierState.Switch === 0) {
-            service.updateCharacteristic(this.platform.Characteristic.Active, this.airPurifierState.Switch);
-          } else if (this.airPurifierState.Switch === 1) {
-            service.updateCharacteristic(this.platform.Characteristic.Active, this.airPurifierState.Switch);
-            service.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState, this.airPurifierState.AirPurifierState);
-            service.updateCharacteristic(this.platform.Characteristic.RotationSpeed, this.airPurifierState.FanMode);
-            if (this.airPurifierType === 1 || this.airPurifierType === 2) {
+          if (this.health === 'ONLINE') {
+            if (this.airPurifierState.Switch === 0) {
+              service.updateCharacteristic(this.platform.Characteristic.Active, 0);
+              service.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState, 0);
+              service.updateCharacteristic(this.platform.Characteristic.TargetAirPurifierState, 0);
+            } else {
+              service.updateCharacteristic(this.platform.Characteristic.Active, this.airPurifierState.Switch);
+              service.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState, this.airPurifierState.AirPurifierState);
               service.updateCharacteristic(this.platform.Characteristic.TargetAirPurifierState, this.airPurifierState.AutoMode);
+              service.updateCharacteristic(this.platform.Characteristic.RotationSpeed, this.airPurifierState.FanMode);
+              if (this.airPurifierType === 1) {
+                service3.updateCharacteristic(this.platform.Characteristic.FilterChangeIndication,
+                  this.filterMaintenaceState.FilterChangeIndication);
+                service3.updateCharacteristic(this.platform.Characteristic.FilterLifeLevel, this.filterMaintenaceState.FilterLifeLevel);
+              }
             }
-            if (this.airPurifierType === 1 || this.airPurifierType === 3) {
-              service3.updateCharacteristic(this.platform.Characteristic.FilterChangeIndication,
-                this.filterMaintenaceState.FilterChangeIndication);
-              service3.updateCharacteristic(this.platform.Characteristic.FilterLifeLevel, this.filterMaintenaceState.FilterLifeLevel);
+            if (this.airPurifierState.Switch === 1) {
+              service2.updateCharacteristic(this.platform.Characteristic.AirQuality, this.airQualitySensorState.AirQuality);
+              service2.updateCharacteristic(this.platform.Characteristic.PM10Density, this.airQualitySensorState.PM10);
+              service2.updateCharacteristic(this.platform.Characteristic.PM2_5Density, this.airQualitySensorState.PM2_5);
             }
+          } else if (this.health === 'OFFLINE' || this.health === 'UNKNOWN') {
+            service.updateCharacteristic(this.platform.Characteristic.Active, 0);
+            service.updateCharacteristic(this.platform.Characteristic.CurrentAirPurifierState, 0);
+            service.updateCharacteristic(this.platform.Characteristic.TargetAirPurifierState, 0);
           }
           this.isUpdateValue = false;
           this.isPolling = false;
-        }
-        if (this.airPurifierState.Switch === 1) {
-          service2.updateCharacteristic(this.platform.Characteristic.AirQuality, this.airQualitySensorState.AirQuality);
-          service2.updateCharacteristic(this.platform.Characteristic.PM10Density, this.airQualitySensorState.PM10);
-          service2.updateCharacteristic(this.platform.Characteristic.PM2_5Density, this.airQualitySensorState.PM2_5);
         }
       } catch (err) {
         this.platform.log.error(this.name + ': ', this.platform.locale.getMsg('error', 4));
@@ -147,75 +171,121 @@ export class SmartThingsAirPurifierService {
     // 일정시간마다 SmartThings서버에서 공기청정기의 정보를 받아옵니다.
     setInterval(async () => {
       try {
-        const switchState = await this.platform.STApi.getSwitch(this.uuid);
-        const fanMode = await this.platform.STApi.getFanMode(this.uuid);
-        const airQuality = await this.platform.STApi.getAirQuality(this.uuid);
-        const airSensor: STDevice.AirQuality = await this.platform.STApi.getAirSensor(this.uuid);
-
-        let switchValue = 0;
-        switch (switchState) {
-          case 'off': switchValue = 0; break;
-          case 'on': switchValue = 1; break;
-        }
-
-        let airpurifierStateValue = 0;
-        switch (fanMode) {
-          case 'sleep': airpurifierStateValue = 0; break;
-          case 'windfree': airpurifierStateValue = 1; break;
-          case 'smart': case 'max': airpurifierStateValue = 2; break;
-        }
-
-        let fanModeString = '';
-        let fanModeValue = 0;
-        if (this.airPurifierState.FanMode <= 15) {
-          fanModeString = 'sleep';
-          fanModeValue = 5;
-        } else if (this.airPurifierState.FanMode > 15 && this.airPurifierState.FanMode <= 50) {
-          fanModeString = 'windfree';
-          fanModeValue = 25;
-        } else if (this.airPurifierState.FanMode > 50 && this.airPurifierState.FanMode <= 85) {
-          fanModeString = 'smart';
-          fanModeValue = 75;
-        } else {
-          fanModeString = 'max';
-          fanModeValue = 95;
-        }
-
-        let targetValue = 0;
-        if (this.airPurifierType === 1 || this.airPurifierType === 2) {
-          const targetState = await this.platform.STApi.getPeriodicSensing(this.uuid);
-          switch (targetState) {
-            case 'off': targetValue = 0; break;
-            case 'on': targetValue = 1; break;
-          }
-        }
-
-        if (switchValue !== this.airPurifierState.Switch
-                    || airpurifierStateValue !== this.airPurifierState.AirPurifierState
-                    || fanModeString !== fanMode
-                    || targetValue !== this.airPurifierState.AutoMode
-        ) {
-          this.airPurifierState.Switch = switchValue;
-          this.airPurifierState.AirPurifierState = airpurifierStateValue;
-          this.airPurifierState.FanMode = fanModeValue;
-          this.airPurifierState.AutoMode = targetValue;
+        const nowHealth = await this.getHealth();
+        if (this.health !== nowHealth) {
           this.isUpdateValue = true;
+          this.health = nowHealth;
+          if (this.health === 'ONLINE') {
+            this.platform.log.info(this.name + ':',
+              [this.platform.locale.getMsg('network', 2)]);
+          } else if (this.health === 'OFFLINE') {
+            this.platform.log.warn(this.name + ':',
+              [this.platform.locale.getMsg('network', 3)]);
+          } else if (this.health === 'UNKNOWN') {
+            this.platform.log.warn(this.name + ':',
+              [this.platform.locale.getMsg('network', 4)]);
+          }
         }
 
-        this.airQualitySensorState.AirQuality = airQuality;
-        this.airQualitySensorState.PM10 = airSensor.PM10;
-        this.airQualitySensorState.PM2_5 = airSensor.PM2_5;
-        this.airQualitySensorState.PM1_0 = airSensor.PM1_0;
-        this.airQualitySensorState.odor = airSensor.odor;
+        if (this.health === 'ONLINE') {
+          const switchState = await this.platform.STApi.getSwitch(this.uuid);
+          const fanMode = await this.platform.STApi.getFanMode(this.uuid);
+          const airQuality = await this.platform.STApi.getAirQuality(this.uuid);
+          const airSensor: STDevice.AirQuality = await this.platform.STApi.getAirSensor(this.uuid);
 
-        if (this.airPurifierType === 1 || this.airPurifierType === 3) {
-          const filterChangeIndication = await this.platform.STApi.getHepaFilterStatus(this.uuid);
-          const filterLifeLevel = await this.platform.STApi.getHepaFilterUsage(this.uuid);
-          switch (filterChangeIndication) {
-            case 'normal': this.filterMaintenaceState.FilterChangeIndication = 0; break;
-            case 'replace': this.filterMaintenaceState.FilterChangeIndication = 1; break;
+          let switchValue = 0;
+          switch (switchState) {
+            case 'off': switchValue = 0; break;
+            case 'on': switchValue = 1; break;
           }
-          this.filterMaintenaceState.FilterLifeLevel = filterLifeLevel;
+
+          let airpurifierStateValue = 0;
+          switch (fanMode) {
+            case 'sleep': airpurifierStateValue = 0; break;
+            case 'windfree': case 'low': airpurifierStateValue = 1; break;
+            case 'smart': case 'max': case 'medium': case 'high': case 'auto': airpurifierStateValue = 2; break;
+          }
+
+          let fanModeString = '';
+          let fanModeValue = 0;
+          if (this.airPurifierType === 2 && this.airPurifierState.AutoMode === 1) {
+            fanModeString = 'auto';
+            fanModeValue = 50;
+          }
+          else if (this.airPurifierState.FanMode <= 15) {
+            fanModeString = 'sleep';
+            fanModeValue = 5;
+          } else if (this.airPurifierState.FanMode > 15 && this.airPurifierState.FanMode <= 50) {
+            switch (this.airPurifierType) {
+              case 1: fanModeString = 'windfree'; break;
+              case 2: fanModeString = 'low'; break;
+            }
+            fanModeValue = 25;
+          } else if (this.airPurifierState.FanMode > 50 && this.airPurifierState.FanMode <= 85) {
+            switch (this.airPurifierType) {
+              case 1: fanModeString = 'smart'; break;
+              case 2: fanModeString = 'medium'; break;
+            }
+            fanModeValue = 75;
+          } else {
+            switch (this.airPurifierType) {
+              case 1: fanModeString = 'max'; break;
+              case 2: fanModeString = 'high'; break;
+            }
+            fanModeValue = 95;
+          }
+
+          let targetValue = 0;
+          if (this.airPurifierType === 1) {
+            const targetState = await this.platform.STApi.getPeriodicSensing(this.uuid);
+            switch (targetState) {
+              case 'off': targetValue = 0; break;
+              case 'on': targetValue = 1; break;
+            }
+          } else if (this.airPurifierType === 2) {
+            switch (fanMode) {
+              case 'auto': targetValue = 1; break;
+              default: targetValue = 0; break;
+            }
+          }
+
+          if (switchValue !== this.airPurifierState.Switch
+            || airpurifierStateValue !== this.airPurifierState.AirPurifierState
+            || fanModeString !== fanMode
+            || targetValue !== this.airPurifierState.AutoMode
+          ) {
+            this.airPurifierState.Switch = switchValue;
+            this.airPurifierState.AirPurifierState = airpurifierStateValue;
+            this.airPurifierState.FanMode = fanModeValue;
+            this.airPurifierState.AutoMode = targetValue;
+            this.isUpdateValue = true;
+          }
+
+          this.airQualitySensorState.AirQuality = airQuality;
+          this.airQualitySensorState.PM10 = airSensor.PM10;
+          this.airQualitySensorState.PM2_5 = airSensor.PM2_5;
+          this.airQualitySensorState.PM1_0 = airSensor.PM1_0;
+          this.airQualitySensorState.odor = airSensor.odor;
+
+          if (this.airPurifierType === 1) {
+            const filterChangeIndication = await this.platform.STApi.getHepaFilterStatus(this.uuid);
+            const filterLifeLevel = await this.platform.STApi.getHepaFilterUsage(this.uuid);
+            switch (filterChangeIndication) {
+              case 'normal': this.filterMaintenaceState.FilterChangeIndication = 0; break;
+              case 'replace': this.filterMaintenaceState.FilterChangeIndication = 1; break;
+            }
+            this.filterMaintenaceState.FilterLifeLevel = filterLifeLevel;
+          }
+        } else if (this.health === 'OFFLINE') {
+          this.isUpdateValue = true;
+          this.platform.log.warn(this.name + ':',
+            [this.platform.locale.getMsg('network', 0),
+            this.platform.locale.getMsg('isNetwork', 0)]);
+        } else if (this.health === 'UNKNOWN') {
+          this.isUpdateValue = true;
+          this.platform.log.warn(this.name + ':',
+            [this.platform.locale.getMsg('network', 0),
+            this.platform.locale.getMsg('isNetwork', 2)]);
         }
       } catch (err) {
         this.platform.log.error(this.name + ':',
@@ -224,10 +294,22 @@ export class SmartThingsAirPurifierService {
     }, 3000);
   }
 
-  // 디바이스에서 지원 Capability 리스트를 가져오는 메소드입니다.
+  // 디바이스의 네트워크 연결상태를 가져오는 메소드입니다.
+  async getHealth() {
+    const health = await this.platform.STApi.getHealth(this.uuid);
+    return health;
+  }
+
+  // 디바이스의 지원 capability 목록을 가져오는 메소드입니다..
   async getCapabilitiesList() {
     const cpList = await this.platform.STApi.getCapabilitiesList(this.uuid);
     return cpList;
+  }
+
+  // 디바이스의 팬 모드 목록을 가져오는 메소드입니다.
+  async getFanModeList() {
+    const fmList = await this.platform.STApi.getFanModeList(this.uuid);
+    return fmList;
   }
 
   // 이하는 핸들러가 작성돼 있습니다.
@@ -240,33 +322,39 @@ export class SmartThingsAirPurifierService {
       }
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 1),
-          this.platform.locale.getMsg('isOnOff', switchValue)]);
+        this.platform.locale.getMsg('isOnOff', switchValue)]);
       callback(null, switchValue);
     } catch (err) {
       this.platform.log.warn(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 1),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
 
   handleActiveSet(switchValue: CharacteristicValue, callback) {
-    if (this.isPolling === false) {
-      try {
-        this.platform.log.info(this.name + ':',
-          [this.platform.locale.getMsg('airpurifier', 2),
+    if (this.health === 'ONLINE') {
+      if (this.isPolling === false) {
+        try {
+          this.platform.log.info(this.name + ':',
+            [this.platform.locale.getMsg('airpurifier', 2),
             this.platform.locale.getMsg('isOnOff', switchValue as number)]);
-        if (switchValue === 0) {
-          this.platform.STApi.setSwitch(this.uuid, 'off');
-        } else if (switchValue === 1) {
-          this.platform.STApi.setSwitch(this.uuid, 'on');
-        }
-      } catch (err) {
-        this.platform.log.warn(this.name + ':',
-          [this.platform.locale.getMsg('airpurifier', 2),
+          if (switchValue === 0) {
+            this.platform.STApi.setSwitch(this.uuid, 'off');
+          } else if (switchValue === 1) {
+            this.platform.STApi.setSwitch(this.uuid, 'on');
+          }
+        } catch (err) {
+          this.platform.log.warn(this.name + ':',
+            [this.platform.locale.getMsg('airpurifier', 2),
             this.platform.locale.getMsg('isCheck', 0), err]);
+        }
+        callback(null, switchValue);
       }
-      callback(null, switchValue);
+    } else if (this.health === 'OFFLINE' || this.health === 'UNKNOWN') {
+      this.platform.log.warn(this.name + ':',
+        [this.platform.locale.getMsg('network', 1)]);
+      callback(null, 0);
     }
   }
 
@@ -276,18 +364,18 @@ export class SmartThingsAirPurifierService {
       let fanValue = 0;
       switch (fanMode) {
         case 'sleep': fanValue = 0; break;
-        case 'windfree': fanValue = 1; break;
-        case 'smart': case 'max': fanValue = 2; break;
+        case 'windfree': case 'low': fanValue = 1; break;
+        case 'smart': case 'max': case 'medium': case 'high': case 'auto': fanValue = 2; break;
       }
 
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 3),
-          this.platform.locale.getMsg('airpurifier-mode', fanValue)]);
+        this.platform.locale.getMsg('airpurifier-mode', fanValue)]);
       callback(null, fanValue);
     } catch (err) {
       this.platform.log.warn(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 3),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -298,9 +386,10 @@ export class SmartThingsAirPurifierService {
       let fanValue = 0;
       switch (fanMode) {
         case 'sleep': fanValue = 0; break;
-        case 'windfree': fanValue = 25; break;
-        case 'smart': fanValue = 75; break;
-        case 'max': fanValue = 100; break;
+        case 'windfree': case 'low': fanValue = 25; break;
+        case 'smart': case 'medium': fanValue = 75; break;
+        case 'max': case 'high': fanValue = 100; break;
+        case 'auto': fanValue = 50; break;
       }
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 4),
@@ -309,7 +398,7 @@ export class SmartThingsAirPurifierService {
     } catch (err) {
       this.platform.log.warn(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 4),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -318,29 +407,41 @@ export class SmartThingsAirPurifierService {
     if (this.isPolling === false) {
       try {
         let fanMode = '';
-        if (rotateValue <= 15) {
+        if (this.airPurifierType === 2 && this.airPurifierState.AutoMode === 1) {
+          fanMode = 'auto';
+        } else if (rotateValue <= 15) {
           fanMode = 'sleep';
         } else if (rotateValue > 15 && rotateValue <= 50) {
-          fanMode = 'windfree';
+          switch (this.airPurifierType) {
+            case 1: fanMode = 'windfree'; break;
+            case 2: fanMode = 'low'; break;
+          }
         } else if (rotateValue > 50 && rotateValue <= 85) {
-          fanMode = 'smart';
+          switch (this.airPurifierType) {
+            case 1: fanMode = 'smart'; break;
+            case 2: fanMode = 'medium'; break;
+          }
         } else {
-          fanMode = 'max';
+          switch (this.airPurifierType) {
+            case 1: fanMode = 'max'; break;
+            case 2: fanMode = 'high'; break;
+          }
         }
+        if (fanMode !== 'auto') this.platform.STApi.setFanMode(this.uuid, fanMode);
+        this.airPurifierState.FanMode = rotateValue as number;
         this.platform.log.info(this.name + ':',
           [this.platform.locale.getMsg('airpurifier', 5),
             fanMode]);
-        this.platform.STApi.setFanMode(this.uuid, fanMode);
         callback(null, rotateValue);
       } catch (err) {
         this.platform.log.warn(this.name + ':',
           [this.platform.locale.getMsg('airpurifier', 5),
-            this.platform.locale.getMsg('isCheck', 0), err]);
+          this.platform.locale.getMsg('isCheck', 0), err]);
       }
     }
   }
 
-  async handleTargetAirPurifierStateGet(callback) {
+  async handleType1TargetAirPurifierStateGet(callback) {
     try {
       const targetState = await this.platform.STApi.getPeriodicSensing(this.uuid);
       let targetValue = 0;
@@ -350,17 +451,17 @@ export class SmartThingsAirPurifierService {
       }
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 6),
-          this.platform.locale.getMsg('isOnOff', targetValue)]);
+        this.platform.locale.getMsg('isOnOff', targetValue)]);
       callback(null, targetValue);
     } catch (err) {
       this.platform.log.warn(this.name + ':',
         [this.platform.locale.getMsg('airpurifier', 6),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
 
-  handleTargetAirPurifierStateSet(APAutoStateValue: CharacteristicValue, callback) {
+  handleType1TargetAirPurifierStateSet(APAutoStateValue: CharacteristicValue, callback) {
     if (this.isPolling === false) {
       try {
         if (APAutoStateValue === 0) {
@@ -377,42 +478,87 @@ export class SmartThingsAirPurifierService {
       } catch (err) {
         this.platform.log.warn(this.name + ':',
           [this.platform.locale.getMsg('airpurifier', 7),
-            this.platform.locale.getMsg('isCheck', 0), err]);
+          this.platform.locale.getMsg('isCheck', 0), err]);
+      }
+      callback(null, APAutoStateValue);
+    }
+  }
+
+  async handleType2TargetAirPurifierStateGet(callback) {
+    try {
+      const targetState = await this.platform.STApi.getFanMode(this.uuid);
+      let targetValue = 0;
+
+      switch (targetState) {
+        case 'auto': targetValue = 1; break;
+        default: targetValue = 0; break;
+      }
+      this.platform.log.info(this.name + ':',
+        [this.platform.locale.getMsg('airpurifier', 6),
+        this.platform.locale.getMsg('isOnOff', targetValue)]);
+      callback(null, targetValue);
+    } catch (err) {
+      this.platform.log.warn(this.name + ':',
+        [this.platform.locale.getMsg('airpurifier', 6),
+        this.platform.locale.getMsg('isCheck', 0), err]);
+      callback(null, 0);
+    }
+  }
+
+  handleType2TargetAirPurifierStateSet(APAutoStateValue: CharacteristicValue, callback) {
+    if (this.isPolling === false) {
+      try {
+        if (APAutoStateValue === 0) {
+          this.airPurifierState.AutoMode = APAutoStateValue;
+          this.platform.log.info(this.name + ':',
+            [this.platform.locale.getMsg('airpurifier', 7), this.platform.locale.getMsg('isOnOff', APAutoStateValue)]);
+          this.platform.STApi.setFanMode(this.uuid, 'low');
+        } else if (APAutoStateValue === 1) {
+          this.airPurifierState.AutoMode = APAutoStateValue;
+          this.platform.log.info(this.name + ':',
+            [this.platform.locale.getMsg('airpurifier', 7), this.platform.locale.getMsg('isOnOff', APAutoStateValue)]);
+          this.platform.STApi.setFanMode(this.uuid, 'auto');
+        }
+      } catch (err) {
+        this.platform.log.warn(this.name + ':',
+          [this.platform.locale.getMsg('airpurifier', 7),
+          this.platform.locale.getMsg('isCheck', 0), err]);
       }
       callback(null, APAutoStateValue);
     }
   }
 
   /*
-     *┌────────┬────────┬────────┬───────┬────────┬───────┬─────────────┬─────────┬───────┐
-     *│미세먼지 │  최고  │  좋음  │  양호  │  보통  │  나쁨  │ 상당히 나쁨 │ 매우나쁨 │  최악  │
-     *├────────┼────────┼────────┼───────┼────────┼───────┼─────────────┼─────────┼───────┤
-     *│  PM10  │ 0~15   │ 16~30  │ 31~40 │ 41~50  │ 51~75 │ 76~100      │ 101~150 │ 151~  │
-     *├────────┼────────┼────────┼───────┼────────┼───────┼─────────────┼─────────┼───────┤
-     *│  PM2.5 │ 0~8    │ 9~15   │ 16~20 │ 21~25  │ 26~37 │ 38~50       │ 51~75   │ 76~   │
-     *└────────┴────────┴────────┴───────┴────────┴───────┴─────────────┴─────────┴───────┘
      * 2021 WHO Air Quality Guidelines(AQG)
-     * ┌───────────┬────────────────┬─────────┬────────┬─────────┬─────────┐
-     * │   이름    │ 지수 또는 부지수 │   NO₂   │  PM₁₀  │   O₃    │  PM2.5  │
-     * ├───────────┼────────────────┼─────────┼────────┼─────────┼─────────┤
-     * │ 매우 낮음 │ 0~25            │ 0~50    │ 0~25   │ 0~60    │  0~15   │
-     * ├───────────┼────────────────┼─────────┼────────┼─────────┼─────────┤
-     * │   낮음    │ 25~50          │ 50~100  │ 25~50   │ 60~120 │ 15~30   │
-     * ├───────────┼────────────────┼─────────┼────────┼─────────┼─────────┤
-     * │   보통    │ 50~75          │ 100~200 │ 50~90  │ 120~180 │ 30~55   │
-     * ├───────────┼────────────────┼─────────┼────────┼─────────┼─────────┤
-     * │   높음    │ 75~100         │ 200~400 │ 90~180 │ 180~240  │ 55~110 │
-     * ├───────────┼────────────────┼─────────┼────────┼─────────┼─────────┤
-     * │ 매우 높음  │ >100           │ >400    │ >180   │ >240    │ >110    │
-     * └───────────┴────────────────┴─────────┴────────┴─────────┴─────────┘
+     * ┌────────────┬──────────┬────────┬────────┬────────┬──────────┐
+     * │  미세먼지   │ 매우 낮음 │  낮음  │  보통  │  높음  │ 매우 높음 │
+     * ├────────────┼──────────┼────────┼────────┼────────┼──────────┤
+     * │  PM2.5(24h)│  25      │  37.5  │  50    │  75    │  75~     │
+     * ├────────────┼──────────┼────────┼────────┼────────┼──────────┤
+     * │  PM10(24h) │  50      │  75    │  100   │  150   │  150~    │
+     * └────────────┴──────────┴────────┴────────┴────────┴──────────┘
+     * https://www.who.int/publications/i/item/9789240034228
+     * (page19, Table 0.1. Recommended AQG levels and interim targets)
+     * 
      * Common Air Quality Index(CAQI)
+     * ┌────────────┬──────────┬────────┬────────┬───────┬───────────┐
+     * │  미세먼지   │ 매우 낮음 │  낮음  │  보통  │  높음  │ 매우 높음 │
+     * ├────────────┼──────────┼────────┼────────┼───────┼───────────┤
+     * │ PM2.5(24h) │ 0~10     │ 10~20  │ 20~30  │ 30~60 │ >60       │
+     * ├────────────┼──────────┼────────┼────────┼───────┼───────────┤
+     * │  PM10(24h) │ 0~15     │ 15~30  │ 30~50  │ 50~100│ >100      │
+     * └────────────┴──────────┴────────┴────────┴───────┴───────────┘
+     * https://www.airqualitynow.eu/download/CITEAIR-Comparing_Urban_Air_Quality_across_Borders.pdf
+     * (page3, Pollutants and calculation grid for the revised CAQI hourly and daily grid (all changes in italics))
+     * 
+     * 삼성의 공기청정기는 CAQI 표준을 준수합니다.
     */
   async handleAirQualityGet(callback) {
     try {
       const airQuality = await this.platform.STApi.getAirQuality(this.uuid);
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airSensor', 0),
-          this.platform.locale.getMsg('airSensor-mode', airQuality)]);
+        this.platform.locale.getMsg('airSensor-mode', airQuality)]);
       if (airQuality >= 1 && airQuality <= 5) {
         callback(null, airQuality);
       } else {
@@ -421,7 +567,7 @@ export class SmartThingsAirPurifierService {
     } catch (err) {
       this.platform.log.warn(this.name + ': ',
         [this.platform.locale.getMsg('airSensor', 0),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -430,13 +576,13 @@ export class SmartThingsAirPurifierService {
     try {
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airSensor', 1),
-          this.airQualitySensorState.PM10,
+        this.airQualitySensorState.PM10,
           'µg']);
       callback(null, this.airQualitySensorState.PM10);
     } catch (err) {
       this.platform.log.warn(this.name + ': ',
         [this.platform.locale.getMsg('airSensor', 1),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -445,13 +591,13 @@ export class SmartThingsAirPurifierService {
     try {
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('airSensor', 2),
-          this.airQualitySensorState.PM2_5,
+        this.airQualitySensorState.PM2_5,
           'µg']);
       callback(null, this.airQualitySensorState.PM2_5);
     } catch (err) {
       this.platform.log.warn(this.name + ': ',
         [this.platform.locale.getMsg('airSensor', 2),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -466,12 +612,12 @@ export class SmartThingsAirPurifierService {
       }
       this.platform.log.info(this.name + ':',
         [this.platform.locale.getMsg('filterMaintenance', 0),
-          this.platform.locale.getMsg('isOnOff', filterValue)]);
+        this.platform.locale.getMsg('isOnOff', filterValue)]);
       callback(null, filterValue);
     } catch (err) {
       this.platform.log.warn(this.name + ': ',
         [this.platform.locale.getMsg('filterMaintenance', 0),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -485,7 +631,7 @@ export class SmartThingsAirPurifierService {
     } catch (err) {
       this.platform.log.warn(this.name + ': ',
         [this.platform.locale.getMsg('filterMaintenance', 1),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
       callback(null, 0);
     }
   }
@@ -496,12 +642,12 @@ export class SmartThingsAirPurifierService {
       if (this.isPolling === false) {
         this.platform.log.info(this.name + ':',
           [this.platform.locale.getMsg('filterMaintenance', 2),
-            this.platform.locale.getMsg('isCheck', FIReset as number)]);
+          this.platform.locale.getMsg('isCheck', FIReset as number)]);
       }
     } catch (err) {
       this.platform.log.warn(this.name + ': ',
         [this.platform.locale.getMsg('filterMaintenance', 2),
-          this.platform.locale.getMsg('isCheck', 0), err]);
+        this.platform.locale.getMsg('isCheck', 0), err]);
     }
     callback(null, FIReset);
   }

@@ -1,8 +1,9 @@
-import { SmartThingsClient, BearerTokenAuthenticator, CapabilityReference} from '@smartthings/core-sdk';
+import { SmartThingsClient, BearerTokenAuthenticator, CapabilityReference } from '@smartthings/core-sdk';
 import * as STDevice from './SmartThingsInterface';
 import AvailableDevices from './AvailableDevices.json';
 import { HomebridgeSmartThings } from '../HomebridgeSmartThings';
 
+// 이 클래스는 API token을 받고 SmartThings API서버에 요청과 응답을 합니다.
 export class SmartThingsAPI {
   public client: SmartThingsClient;
   private private_Token: string;
@@ -15,62 +16,90 @@ export class SmartThingsAPI {
     this.client = new SmartThingsClient(new BearerTokenAuthenticator(this.private_Token));
   }
 
+  // DeviceList: [{uuid, name, type, manufacturer, model, serialNumber, firmwareVersion}, ···]
   async getDeviceList(): Promise<STDevice.STDevice[]> {
-    const device: STDevice.STDevice = {
-      uuid: '',
-      name: '',
-      type: '',
-      manufacturer: '',
-      model: '',
-      serialNumber: '',
-      firmwareVersion: '',
-    };
-
-    await this.client.devices.list().then(Devices => {
-      try {
-        if (Devices !== null || Devices !== undefined) {
-          for (let i = 0; i < Devices.length; i++) {
-            for (let j = 0; j < AvailableDevices.list.length; j++) {
-              const ocfType = Devices[i]['ocfDeviceType'];
-              if (AvailableDevices.list[j] === ocfType) {
-                const ocf = Devices[i]['ocf'] ? Devices[i]['ocf'] : 'not ocf';
-                const modelNumber = ocf ? ocf['modelNumber'] : 'not ocf';
-                const firmwareVersion = ocf ? ocf['specVersion'] : 'not ocf';
-                device.uuid = Devices[i]['deviceId'];
-                device.name = Devices[i]['label'];
-                device.type = ocfType;
-                device.manufacturer = Devices[i]['manufacturerName'];
-                device.model = modelNumber;
-                device.firmwareVersion = firmwareVersion;
-                this.devices.push(device);
-              }
-            }
+    await this.client.devices.list()
+      .then(Devices => {
+        try {
+          if (Devices !== null || Devices !== undefined) {
+            Devices.forEach(Device => {
+              AvailableDevices.list.forEach(AvailableDevice => {
+                let ocfType = Device['ocfDeviceType'];
+                if (AvailableDevice === ocfType) {
+                  let device: STDevice.STDevice = {
+                    uuid: '',
+                    name: '',
+                    type: '',
+                    manufacturer: '',
+                    model: '',
+                    serialNumber: '',
+                  };
+                  const ocf = Device['ocf'] ? Device['ocf'] : 'not ocf';
+                  const modelNumber = ocf ? ocf['modelNumber'] : 'not ocf';
+                  device.uuid = Device['deviceId'];
+                  device.name = Device['label'];
+                  device.type = ocfType;
+                  device.manufacturer = Device['manufacturerName'];
+                  device.model = modelNumber;
+                  this.platform.log.info('name: ' + device.name + ' | uuid: ' + device.uuid);
+                  this.devices.push(device);
+                }
+              })
+            })
+          } else {
+            return;
           }
-        } else {
-          return;
+        } catch (err) {
+          return err;
         }
-      } catch (err) {
-        return err;
-      }
-    });
+      });
     return this.devices;
   }
 
+  // ONLINE, OFFLINE, UNKNOWN
+  async getHealth(device_UUID: string): Promise<string> {
+    let health = '';
+    await this.client.devices.getHealth(device_UUID)
+      .then(res => {
+        health = res.state;
+      })
+    return health;
+  }
+
+  // Capabilities list: {id: capability_name, version: number}
   async getCapabilitiesList(device_UUID: string): Promise<Array<CapabilityReference>> {
     let capabilitiesList = new Array<CapabilityReference>();
-    await this.client.devices.get(device_UUID).then(res => {
+    await this.client.devices.get(device_UUID)
+      .then(res => {
         const component = res['components'] ? res['components'] : 'no Capabilites';
         capabilitiesList = component[0]['capabilities'] as Array<CapabilityReference>;
       });
     return capabilitiesList;
   }
 
+  // Cube FanMode: sleep, windfree, smart, max
+  // Smart FanMode: sleep, low, medium, high, auto
+  async getFanModeList(device_UUID: string): Promise<Array<string>> {
+    let fanModeList = new Array<string>();
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airConditionerFanMode')
+      .then(res => {
+        const supportFanModeList = res.supportedAcFanModes.value as Array<string>;
+        if(supportFanModeList != undefined){
+          supportFanModeList.forEach(supprotFanMode => {
+            fanModeList.push(supprotFanMode);
+          })
+        }
+      });
+    return fanModeList;
+  }
+
   // SwitchState: On/Off
   async getSwitch(device_UUID: string): Promise<string> {
-    let switchValue= '';
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'switch').then(res => {
-      switchValue = res['switch']['value'] as string;
-    });
+    let switchValue = '';
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'switch')
+      .then(res => {
+        switchValue = res['switch']['value'] as string;
+      });
     return switchValue;
   }
 
@@ -82,12 +111,12 @@ export class SmartThingsAPI {
     this.client.devices.executeCommand(device_UUID, command);
   }
 
-  // FanMode: smart, max, windfree, sleep
   async getFanMode(device_UUID: string): Promise<string> {
     let fanMode = '';
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airConditionerFanMode').then(res => {
-      fanMode = res['fanMode']['value'] as string;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airConditionerFanMode')
+      .then(res => {
+        fanMode = res['fanMode']['value'] as string;
+      });
     return fanMode;
   }
 
@@ -103,9 +132,10 @@ export class SmartThingsAPI {
   // PeriodicSensing: on/off | DefaultInterval: 600
   async getPeriodicSensing(device_UUID: string): Promise<string> {
     let periodicSensing = '';
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'custom.periodicSensing').then(res => {
-      periodicSensing = res['periodicSensing']['value'] as string;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'custom.periodicSensing')
+      .then(res => {
+        periodicSensing = res['periodicSensing']['value'] as string;
+      });
     return periodicSensing;
   }
 
@@ -118,61 +148,65 @@ export class SmartThingsAPI {
     this.client.devices.executeCommand(device_UUID, command);
   }
 
-  // 공기질: 1(매우 좋음) ~ 4(매우 나쁨)
+  // Air quality: number(1(Excellent) ~ 4(Inferior))
   async getAirQuality(device_UUID: string): Promise<number> {
-    let airQuality= 0;
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airQualitySensor').then(res => {
-      airQuality = res['airQuality']['value'] as number;
-    });
+    let airQuality = 0;
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'airQualitySensor')
+      .then(res => {
+        airQuality = res['airQuality']['value'] as number;
+      });
     return airQuality;
   }
 
   // PM10: number, PM2.5: number, PM1.0: number, odor: number
   async getAirSensor(device_UUID: string): Promise<STDevice.AirQuality> {
     const airQuality: STDevice.AirQuality = {
-      'PM10':0,
-      'PM2_5':0,
-      'PM1_0':0,
-      'odor':0,
+      'PM10': 0,
+      'PM2_5': 0,
+      'PM1_0': 0,
+      'odor': 0,
     };
     // PM10, PM2.5,
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'dustSensor').then(res => {
-      airQuality.PM10 = res.dustLevel.value as number;
-      airQuality.PM2_5 = res.fineDustLevel.value as number;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'dustSensor')
+      .then(res => {
+        airQuality.PM10 = res.dustLevel.value as number;
+        airQuality.PM2_5 = res.fineDustLevel.value as number;
+      });
     // PM1.0
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'veryFineDustSensor').then(res => {
-      airQuality.PM1_0 = res.veryFineDustLevel.value as number;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'veryFineDustSensor')
+      .then(res => {
+        airQuality.PM1_0 = res.veryFineDustLevel.value as number;
+      });
     // odor
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'odorSensor').then(res => {
-      airQuality.odor = res.odorLevel.value as number;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'odorSensor')
+      .then(res => {
+        airQuality.odor = res.odorLevel.value as number;
+      });
     return airQuality;
   }
 
-  
-
-  // 헤파필터상태: normal/replace
+  // Hepa-filter status: normal/replace
   async getHepaFilterStatus(device_UUID: string): Promise<string> {
     let filterStatus = '';
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'custom.hepaFilter').then(res => {
-      filterStatus = res['hepaFilterStatus']['value'] as string;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'custom.hepaFilter')
+      .then(res => {
+        filterStatus = res['hepaFilterStatus']['value'] as string;
+      });
     return filterStatus;
   }
 
-  // 헤파필터 남은 사용량: 0~100
+  // Hepa-filter usage: 0~100
   async getHepaFilterUsage(device_UUID: string): Promise<number> {
     let filterUsage = 0;
-    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'custom.hepaFilter').then(res => {
-      filterUsage = res['hepaFilterUsage']['value'] as number;
-    });
+    await this.client.devices.getCapabilityStatus(device_UUID, 'main', 'custom.hepaFilter')
+      .then(res => {
+        filterUsage = res['hepaFilterUsage']['value'] as number;
+      });
 
     return filterUsage;
   }
 
-  // 헤파필터 초기화
+  // Hepa-filter reset
   setHepaFilterReset(device_UUID: string) {
     const command = {
       capability: 'custom.hepaFilter',

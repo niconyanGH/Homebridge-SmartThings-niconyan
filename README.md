@@ -18,18 +18,18 @@ The stable version is uploaded to the main branch.
 ### v1.0.0-beta.0
 </span>
 
-* 악세서리: 무풍큐브 공기청정기(AX47T9360WSD)
-  - 작동 운전모드 4단계 제어(수면, 무풍, 스마트, 최대)
+* 악세서리: 무풍큐브 공기청정기(AX47T9360WSD), 스마트 공기청정기(AX60R5080WD)
+  - 작동 운전모드 4단계 제어(수면, (무풍 | 저속), (스마트 | 중간), (최대 | 고속)
     + 환풍기 속도 게이지로 제어
     + 수면: 0~15 %
-    + 무풍: 16~50 %
-    + 스마트: 51~85 %
-    + 최대: 86~100 %
+    + 무풍 | 저속: 16~50 %
+    + 스마트 | 저속: 51~85 %
+    + 최대 | 고속: 86~100 %
 
-* Accessory: air purifier(AX47T9360WSD)
-  - control to 4-levels operating mode (sleep, wind-free, smart, max)
+* Accessory: wind-free Cube air purifier(AX47T9360WSD), Smart air purifier(AX60R5080WD)
+  - control to 4-levels operating mode (sleep, (wind-free | low), (smart | medium), (max | high)
     + control by ventilator speed gauge
     + sleep: 0~15 %
-    + wind-free: 16~50 %
-    + smart: 51~85 %
-    + max: 86~100 %``
+    + wind-free | low: 16~50 %
+    + smart | medium: 51~85 %
+    + max | high: 86~100 %``

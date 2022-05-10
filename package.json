@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@smartthings/core-sdk": "^3.4.0",
-    "homebridge-config-ui-x": "^4.42.0"
+    "homebridge-config-ui-x": "^4.43.3"
   },
   "devDependencies": {
     "@types/node": "^17.0.23",
