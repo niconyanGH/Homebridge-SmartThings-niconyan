@@ -12,7 +12,7 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 
 실험적인 기능을 [베타 브런치](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/tree/beta)에서 개발중입니다.
 
-이 플러그인을 사용하며 문제를 겪는다면 [이슈탭](https://github.com/niconyanGH/homebridge-smartthings/issues)에 제보해주세요.
+이 플러그인을 사용하며 문제를 겪는다면 [이슈탭](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/issues)에 제보해주세요.
 
 홈 앱에 표시되는 '일련 번호', '모델', '펌웨어' 정보는 부정확한 정보입니다.
 
@@ -38,7 +38,7 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 
 ## 플러그인 사용법
 
-1. 서버에 [Homebridge](https://github.com/homebridge/homebridge)를 설치합니다.
+1. 서버에 [Homebridge](https://github.com/homebridge/homebridge#installation)를 설치합니다.
 2. 서버의 웹브라우저에서 주소창에 localhost:8581을 입력합니다. 또는 서버와 같은 네트워크에 연결된 단말기의 웹 브라우저에서 서버IP:8581을 입력합니다. (경우에 따라 서버에서 8581포트를 수동으로 열어줘야 할 수 있습니다.)
 3. 플러그인 탭에서 검색창에 SmartThings를 검색해 나오는 결과 중 본 플러그인을 설치합니다.
 4. 설치가 끝나면 최초 한번만 입력받는 SmartThingsAPI Token값과 언어설정을 할 수 있는 설정창이 나옵니다. SmartThingsAPI Token을 발급받는 방법은 뒤에 이어서 작성하겠습니다.

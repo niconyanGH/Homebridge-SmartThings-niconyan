@@ -12,7 +12,7 @@ You can set up automation by linking HomeKit devices and SmartThings devices, or
 
 Experimental functionality is being developed in [beta branch](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/tree/beta).
 
-If you have a trouble, please report it to the [issues](https://github.com/niconyanGH/homebridge-smartthings/issues).
+If you have a trouble, please report it to the [issues](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/issues).
 
 The ‘serial number’, ‘model’, and ‘firmware version’ information displayed on the Home app through this plug-in is inaccurate.
 
