@@ -15,7 +15,7 @@ The stable version is uploaded to the main branch.
 ## 릴리스 노트(Release Note)
 <span align="center">
 
-### v0.0.1-beta.0
+### ver0.0.1-beta.0
 </span>
 
 ![Homebridge-SmartThings-niconyan v0.0.1-beta.0 Fetch Card(kr)](./ReleaseNote/v0.0.1-beta.0/Fetch_Card-v0.0.1-beta.0(kr).png)
