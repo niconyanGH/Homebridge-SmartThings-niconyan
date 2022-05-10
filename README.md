@@ -47,16 +47,16 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
 ## How to get a SmartThingsAPI token
 
 1. Access the [SmartThings token page](https://account.smartthings.com/tokens) and sign in to your Samsung account.
-![Alt text](guide/1.png?raw=true)
+![guide1](guide/1.png?raw=true)
 
 2. Click the GENERATE NEW TOKEN.
-![Alt text](guide/2.png?raw=true)
+![guide2](guide/2.png?raw=true)
 
 3. Check the ‘Devices’ boxes. This plug-in requires no further authentication.
-![Alt text](guide/3.png?raw=true)
+![guide3](guide/3.png?raw=true)
 
 4. A SmartThingsAPI token has been issued that cannot be viewed again when it is out of the page. Even if you forget, you can get a new one.
-![Alt text](guide/4.png?raw=true)
+![guide4](guide/4.png?raw=true)
 
 ## Release note
 <span align="center">
@@ -64,7 +64,7 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
 ### ver0.0.1
 </span>
 
-![Alt text](ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(en).png?raw=true)
+![Homebridge-SmartThings-niconyan v0.0.1 Summary Introduction(en)](ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(en).png?raw=true)
 
 new accessory: air purifier
 * turn on/off power

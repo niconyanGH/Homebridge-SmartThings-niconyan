@@ -47,16 +47,16 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 ## SmartThingsAPI Token 발급받는 방법
 
 1. [SmartThings token 페이지](https://account.smartthings.com/tokens)에 접속하고 SmartThings 소유자의 삼성계정으로 로그인합니다.
-![Alt text](../guide/1.png?raw=true)
+![guide1](../guide/1.png?raw=true)
 
 2. GENERATE NEW TOKEN 을 클릭해 새 토큰을 생성합니다.
-![Alt text](../guide/2.png?raw=true)
+![guide2](../guide/2.png?raw=true)
 
 3. 인증 범위를 Devices 만 전부 체크합니다. 이 플러그인은 이 이상의 인증을 필요로 하지 않습니다.
-![Alt text](../guide/3.png?raw=true)
+![guide3](../guide/3.png?raw=true)
 
 4. 페이지를 벗어나면 다시 조회할 수 없는 SmartThings API토큰이 발급됐습니다. 잊어버려도 새로 발급받으면 됩니다.
-![Alt text](../guide/4.png?raw=true)
+![guide4](../guide/4.png?raw=true)
 
 ## 릴리스 노트
 <span align="center">
@@ -64,7 +64,7 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 ### ver0.0.1
 </span>
 
-![Alt text](./../ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(kr).png?raw=true)
+![Homebridge-SmartThings-niconyan v0.0.1 Summary Introduction(kr)](./../ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(kr).png?raw=true)
 
 새 액세서리: 공기청정기
 * 공기청정기의 전원을 껐다 킬 수 있습니다.
