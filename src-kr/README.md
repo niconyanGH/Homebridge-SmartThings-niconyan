@@ -3,9 +3,9 @@
 # Homebridge-SmartThings-niconyan
 </span>
 
-[Homebridge](https://github.com/homebridge/homebridge)용 SmartThings 플러그인입니다. 
-
 이 폴더내에 있는 소스코드는 주석이 한국어로 되어 있습니다.
+
+[Homebridge](https://github.com/homebridge/homebridge)용 SmartThings 플러그인입니다. 
 
 SmartThings기기를 아이폰에서 사용할 때 유용합니다.
 SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri로 제어할 때, Control Center에 아이콘을 추가해놓고 쓸 수 있습니다.
@@ -30,7 +30,7 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
     + 전원 On/Off
     + 작동 운전모드 제어: 수면/무풍/스마트/강풍 (베타 테스트중)
     + 자동 운전모드 제어: 자동/수동
-    + 공기질 확인: 1 ~ 4 (CAQI)
+    + 공기질 확인: 1 ~ 4 [(CAQI)](https://www.airqualitynow.eu/download/CITEAIR-Comparing_Urban_Air_Quality_across_Borders.pdf)
     + 미세먼지 PM10, PM2.5 수치 확인 (단위가 잘못 됨. mg/m³가 아닌 µg/m³가 옳음.)
     + 헤파 필터 교체지시등 확인 (지원예정)
     + 헤파 필터 남은 수명 확인 (지원예정)

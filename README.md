@@ -3,7 +3,7 @@
 # Homebridge-SmartThings-niconyan
 </span>
 
-한국어공지는 src-kr 폴더를 클릭해 확인할 수 있습니다.
+[한국어공지](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan/tree/main/src-kr)는 src-kr 폴더를 클릭해 확인할 수 있습니다.
 
 This is SmartThings plug-in for [Homebridge](https://github.com/homebridge/homebridge).
 
@@ -16,7 +16,7 @@ If you have a trouble, please report it to the [issues](https://github.com/nicon
 
 The ‘serial number’, ‘model’, and ‘firmware version’ information displayed on the Home app through this plug-in is inaccurate.
 
-## Support range
+## Support scope
 ### Support log language
 * Korean
 * English
@@ -30,7 +30,7 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
     + power On/Off
     + operation mode control: sleep/windfree/smart/max (beta)
     + auto mode contorl: auto/manual
-    + verify air quality: 1 ~ 4 (CAQI)
+    + verify air quality: 1 ~ 4 [(CAQI)](https://www.airqualitynow.eu/download/CITEAIR-Comparing_Urban_Air_Quality_across_Borders.pdf)
     + verify finedust PM10, PM2.5 (unit is wrong. mg/m³ is not, µg/m³ is right.)
     + verify indicator for hepa-filter (scheduled to support)
     + verify life to hepa-filter (scheduled to support)
