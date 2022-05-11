@@ -6,11 +6,11 @@
 
 [Homebridge](https://github.com/homebridge/homebridge)용 SmartThings 플러그인 베타버전입니다.
 
-안정화 버전은 메인 브런치에 업로드 됩니다.
+안정화 버전은 [메인 브런치](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan)에 업로드 됩니다.
 
 This is beta version plug-in for [Homebridge](https://github.com/homebridge/homebridge)-SmartThings.
 
-The stable version is uploaded to the main branch.
+The stable version is uploaded to the [main branch](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan).
 
 ## 릴리스 노트(Release Note)
 <span align="center">
