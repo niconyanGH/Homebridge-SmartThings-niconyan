@@ -59,6 +59,14 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
 ![guide4](guide/4.png?raw=true)
 
 ## Release note
+
+<span align="center">
+
+### ver0.0.2
+</span>
+
+* Force version up due to package management error.
+
 <span align="center">
 
 ### ver0.0.1
@@ -66,7 +74,7 @@ The ‘serial number’, ‘model’, and ‘firmware version’ information dis
 
 ![Homebridge-SmartThings-niconyan v0.0.1 Summary Introduction(en)](ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(en).png?raw=true)
 
-new accessory: air purifier
+new accessory type: air purifier
 * turn on/off power
 * switch automode
 * verify air quality

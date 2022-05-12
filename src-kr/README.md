@@ -59,6 +59,14 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 ![guide4](../guide/4.png?raw=true)
 
 ## 릴리스 노트
+
+<span align="center">
+
+### ver0.0.2
+</span>
+
+* 패키지 관리 실수로 인한 버전 강제 업.
+
 <span align="center">
 
 ### ver0.0.1
@@ -66,7 +74,7 @@ SmartThings기기를 Homekit 기기와 연동해서 자동화 설정할때, Siri
 
 ![Homebridge-SmartThings-niconyan v0.0.1 Summary Introduction(kr)](./../ReleaseNote/v0.0.1/Summary_Introduction_Homebridge-SmartThings-AirPurifier(kr).png?raw=true)
 
-새 액세서리: 공기청정기
+새 액세서리 타입: 공기청정기
 * 공기청정기의 전원을 껐다 킬 수 있습니다.
 * 공기청정기의 자동모드를 수동과 자동중에 선택할 수 있습니다.
 * 공기질을 확인할 수 있습니다.
