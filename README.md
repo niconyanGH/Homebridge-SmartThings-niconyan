@@ -13,6 +13,15 @@ This is beta version plug-in for [Homebridge](https://github.com/homebridge/home
 The stable version is uploaded to the [main branch](https://github.com/niconyanGH/Homebridge-SmartThings-niconyan).
 
 ## 릴리스 노트(Release Note)
+
+<span align="center">
+
+### ver0.0.1-beta.1
+</span>
+
+* 패키지 관리 실수로 인한 버전 강제 업.
+* Force version up due to package management error.
+
 <span align="center">
 
 ### ver0.0.1-beta.0
