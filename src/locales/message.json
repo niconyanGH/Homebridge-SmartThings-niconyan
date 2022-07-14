@@ -22,7 +22,8 @@
             "5": "SmartThings 기기를 찾지 못했습니다.",
             "6": "캐시에서 기존 액세서리 복원:",
             "7": "캐시에서 기존 액세서리 삭제:",
-            "8": "새 액세서리 추가:"
+            "8": "새 액세서리 추가:",
+            "9": "네트워크 상태 알람 설정:"
         },
         "error": {
             "0": "메세지 오류 발생",
@@ -98,7 +99,8 @@
             "5": "Not discovered SmartThings",
             "6": "Restoring existing accessory from cache:",
             "7": "Removing existing accessory from cache:",
-            "8": "Adding new accessory:"
+            "8": "Adding new accessory:",
+            "9": "Network status alarm setting:"
         },
         "error": {
             "0": "Error: message",

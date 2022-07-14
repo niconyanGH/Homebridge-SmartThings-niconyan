@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge-SmartThings-niconyan",
   "name": "homebridge-smartthings-niconyan",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "SmartThings plugin for Homebridge",
   "main": "dist/index.js",
   "keywords": [
@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@smartthings/core-sdk": "^3.6.0",
-    "homebridge-config-ui-x": "^4.43.3"
+    "homebridge-config-ui-x": "^4.36.0"
   },
   "devDependencies": {
     "@types/node": "^17.0.23",

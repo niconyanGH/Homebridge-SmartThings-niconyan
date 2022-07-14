@@ -240,16 +240,18 @@ export class SmartThingsAirPurifierService {
                         }
                         this.filterMaintenaceState.FilterLifeLevel = filterLifeLevel;
                     }
-                } else if ('OFFLINE') {
-                    this.isUpdateValue = true;
-                    this.platform.log.warn(this.name + ':',
-                        [this.platform.locale.getMsg('network', 0),
-                        this.platform.locale.getMsg('isNetwork', 0)])
-                } else if ('UNKNOWN') {
-                    this.isUpdateValue = true;
-                    this.platform.log.warn(this.name + ':',
-                        [this.platform.locale.getMsg('network', 0),
-                        this.platform.locale.getMsg('isNetwork', 2)])
+                } else if (this.platform.network_status_alarm) {
+                    if (this.health === 'OFFLINE') {
+                        this.isUpdateValue = true;
+                        this.platform.log.warn(this.name + ':',
+                            [this.platform.locale.getMsg('network', 0),
+                            this.platform.locale.getMsg('isNetwork', 0)]);
+                    } else if (this.health === 'UNKNOWN') {
+                        this.isUpdateValue = true;
+                        this.platform.log.warn(this.name + ':',
+                            [this.platform.locale.getMsg('network', 0),
+                            this.platform.locale.getMsg('isNetwork', 2)]);
+                    }
                 }
             } catch (err) {
                 this.platform.log.error(this.name + ':',

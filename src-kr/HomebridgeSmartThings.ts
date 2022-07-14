@@ -22,16 +22,26 @@ export class HomebridgeSmartThings implements DynamicPlatformPlugin {
   // 지원목록에 있는 SmartThings 디바이스를 저장하는 데 사용됩니다.
   public devices: STDevice[];
   public token: string;
+  public network_status_alarm: boolean;
+
   constructor(
     public readonly log: Logger,
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
     const lang = config.language;
+    this.network_status_alarm = config.network_status_alarm;
     this.token = config.private_token;
     this.locale = new Locale(lang);
     this.STApi = new SmartThingsAPI(this.token, this);
     this.devices = [];
+
+    // 네트워크 알람 스위치를 체크합니다.
+    if(this.network_status_alarm) {
+      log.info(this.locale.getMsg('platform', 9), this.locale.getMsg('isOnOff', 1));
+    } else {
+      log.info(this.locale.getMsg('platform', 9), this.locale.getMsg('isOnOff', 0));
+    }
 
     // config에 사용자가 토큰값을 입력하지 않았다면 플랫폼이 시작하지 않습니다.
     if (config === undefined || config === null || this.token === undefined || this.token === null) {

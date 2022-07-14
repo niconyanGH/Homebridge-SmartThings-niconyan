@@ -9,19 +9,25 @@
         "properties": {
             "private_token": {
                 "title": "SmartThings Token",
-                "description": "새 토큰을 발급 받는 방법은 https://github.com/niconyanGH/Homebridge-SmartThings-niconyan 을 방문해주세요.",
                 "type": "string",
+                "description": "새 토큰을 발급 받는 방법은 https://github.com/niconyanGH/Homebridge-SmartThings-niconyan 을 방문해주세요.",
                 "pattern": "^([a-z0-9]{8}-)([a-z0-9]{4}-){3}[a-z0-9]{12}$",
                 "required": true
             },
             "language": {
                 "title": "로그 언어(Log Language)",
+                "type": "string",
                 "default": "kr",
                 "oneOf": [
                     {"title": "한국어", "enum": ["kr"]},
                     {"title": "English","enum": ["en"]}
                 ],
-                "type": "string",
+                "required": true
+            },
+            "network_status_alarm": {
+                "title": "네트워크 상태 알람(Network status alarm)",
+                "type": "boolean",
+                "default": false,
                 "required": true
             }
         }

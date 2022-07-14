@@ -22,6 +22,7 @@ export class HomebridgeSmartThings implements DynamicPlatformPlugin {
   // This is used to store SmartThings devices in the AvailableDevice list.
   public devices: STDevice[];
   public token: string;
+  public network_status_alarm: boolean;
 
   constructor(
     public readonly log: Logger,
@@ -30,11 +31,19 @@ export class HomebridgeSmartThings implements DynamicPlatformPlugin {
   ) {
 
     const lang = config.language;
+    this.network_status_alarm = config.network_status_alarm;
     this.token = config.private_token;
     this.locale = new Locale(lang);
     this.STApi = new SmartThingsAPI(this.token, this);
     this.devices = [];
 
+    // Check to network alarm switch
+    if(this.network_status_alarm) {
+      log.info(this.locale.getMsg('platform', 9), this.locale.getMsg('isOnOff', 1));
+    } else {
+      log.info(this.locale.getMsg('platform', 9), this.locale.getMsg('isOnOff', 0));
+    }
+    
     // The platform does not start if the user has not entered a token value in config.
     if (config === undefined || config === null || this.token === undefined || this.token === null) {
       log.warn(this.locale.getMsg('error', 1));
